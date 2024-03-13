@@ -33,7 +33,13 @@ const Dashboard = (props) => {
     e.preventDefault();
     if(bookingDetails.bookingDate && bookingDetails.firstName && bookingDetails.lastName && bookingDetails.email) {
       // Check the seat avl for updated booking date
-      const seatAlreadyBooked = passengers.find(passenger => passenger.id !== bookingDetails.id && passenger.bookingDate === bookingDetails.bookingDate && passenger.seatNo === bookingDetails.seatNo)
+      const seatAlreadyBooked = bookingDetails.seatNo.some(seatNo =>
+        passengers.some(passenger =>
+          passenger.id !== bookingDetails.id &&
+          passenger.bookingDate === bookingDetails.bookingDate &&
+          passenger.seatNo.includes(seatNo)
+        )
+      );
       if(seatAlreadyBooked) {
         props.showAlert(`Seat not avl for ${bookingDetails.bookingDate}`,'danger')
         return;
@@ -83,8 +89,8 @@ const Dashboard = (props) => {
   return (
     <div className='container'>
       <h2 className='table-heading text-center mt-5'>Passenger List</h2>
-      <table className="table">
-        <thead>
+      <table className="table table-hover table-hover table-bordered">
+        <thead className='bg-light'>
           <tr>
             <th>Name</th>
             <th>Email</th>
@@ -98,7 +104,7 @@ const Dashboard = (props) => {
             <tr key={passenger.id}>
               <td>{passenger.firstName} {passenger.lastName}</td>
               <td>{passenger.email}</td>
-              <td>{passenger.seatNo}</td>
+              <td>{passenger.seatNo.toString()}</td>
               <td>{passenger.bookingDate}</td>
               <td>
                 <button className="btn btn-info" onClick={() => handleBookingEdit(passenger.id)}>Edit</button>

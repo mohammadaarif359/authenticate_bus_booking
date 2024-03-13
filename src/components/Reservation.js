@@ -5,7 +5,7 @@ const Reservation = (props) => {
   const navigate = useNavigate();
   
   const [bookedSeats,setBookedSeats] = useState([])
-  const [selectedSeat, setSelectedSeat] = useState(null);
+  const [selectedSeat, setSelectedSeat] = useState([]);
   const [bookingDate, setBooingDate] = useState(new Date().toISOString().split('T')[0]);
   const [bookingDetails, setBookingDetails] = useState({
     firstName: '',
@@ -20,7 +20,7 @@ const Reservation = (props) => {
       if(pessengers) {
         const filterBookingData = pessengers.filter(item=>item.bookingDate === bookingDate)
         if(filterBookingData) {
-          const alreadyBookedSeat = filterBookingData.map(data => data.seatNo);
+          const alreadyBookedSeat = filterBookingData.map(data => data.seatNo).flat();
           setBookedSeats(alreadyBookedSeat)
         }
       }
@@ -32,13 +32,18 @@ const Reservation = (props) => {
     if (bookedSeats.includes(seatNumber)) {
       props.showAlert('This seat is already booked','danger')
     } else {
-      setSelectedSeat(seatNumber);
+      if (selectedSeat.includes(seatNumber)) {
+        setSelectedSeat(selectedSeat.filter(seat => seat !== seatNumber));
+      } else {
+        setSelectedSeat([...selectedSeat, seatNumber]);
+      }
     }
   };
 
   const handleBookingSubmit = (e) => {
     e.preventDefault();
-    if (!selectedSeat) {
+    // if (!selectedSeat) {
+      if (selectedSeat.length === 0) {  
       props.showAlert('Please select a seat','danger')
       return;
     }
@@ -67,6 +72,7 @@ const Reservation = (props) => {
       props.showAlert('Please fill all required field','danger')
     }
   };
+  console.log('already set booked',bookedSeats)
 
   return (
     <div className='row mt-5'>
@@ -123,7 +129,8 @@ const Reservation = (props) => {
       <div className='col-md-4'> 
         <div className="mt-2 booking-form">
           <h4>Booking Form</h4>
-          {selectedSeat &&<p>Seat No booked {selectedSeat}</p>}
+          {selectedSeat.length > 0 && <p>Seats booked: {selectedSeat.join(', ')}</p>}
+          
           <form onSubmit={handleBookingSubmit}>
             <div className="mb-3">
               <label htmlFor="bookingDate" className="form-label">Booking Date</label>
@@ -154,7 +161,7 @@ const Reservation = (props) => {
             </div>
             
             <div className="mb-2">
-              <button type="submit" className="btn btn-primary">Book Ticket</button>
+              <button type="submit" className="btn btn-primary" disabled={selectedSeat.length === 0}>{selectedSeat.length ? 'Book Ticket' : 'Select Seat First'}</button>
             </div>
             <br/>
           </form>
